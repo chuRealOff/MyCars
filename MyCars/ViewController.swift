@@ -11,6 +11,7 @@ import CoreData
 
 class ViewController: UIViewController {
     
+    var car: Car!
     var context: NSManagedObjectContext!
     lazy var dateFormatter: DateFormatter = {
         let df = DateFormatter()
@@ -33,11 +34,47 @@ class ViewController: UIViewController {
     }
     
     @IBAction func startEnginePressed(_ sender: UIButton) {
+        car.timesDriven += 1
+        car.lastStarted = Date()
         
+        do {
+            try context.save()
+            insertData(selectedCar: car)
+        } catch let error as NSError {
+            print(error.localizedDescription)
+        }
     }
     
     @IBAction func rateItPressed(_ sender: UIButton) {
+        let ac = UIAlertController(title: "Rate it", message: "Rate this car please", preferredStyle: .alert)
+        let rateAction = UIAlertAction(title: "Rate", style: .default) { action in
+            if let text = ac.textFields?.first?.text {
+                self.update(rating: (text as NSString).doubleValue)
+            }
+        }
+        let cancelAction = UIAlertAction(title: "Cancel", style: .default)
         
+        ac.addTextField { textField in
+            textField.keyboardType = .numberPad
+        }
+        ac.addAction(rateAction)
+        ac.addAction(cancelAction)
+        present(ac, animated: true)
+    }
+    
+    private func update(rating: Double) {
+        car.rating = rating
+        
+        do {
+            try context.save()
+            insertData(selectedCar: car)
+        } catch let error as NSError {
+            let ac = UIAlertController(title: "Wrong value", message: "Incorrect input", preferredStyle: .alert)
+            ac.addAction(UIAlertAction(title: "OK", style: .default))
+            present(ac, animated: true)
+            
+            print(error.localizedDescription)
+        }
     }
     
     override func viewDidLoad() {
@@ -51,9 +88,10 @@ class ViewController: UIViewController {
         
         do {
             let results = try context.fetch(fetchRequest)
-            if let selectedCar = results.first {
-            insertData(selectedCar: selectedCar)
+            if results.first != nil {
+            car = results.first!
             }
+            insertData(selectedCar: car)
         } catch let error as NSError {
             print(error.localizedDescription)
         }
@@ -70,7 +108,7 @@ class ViewController: UIViewController {
         if car.lastStarted != nil {
             lastTimeStartedLabel.text = "Last time started: \(dateFormatter.string(from: car.lastStarted!))"
         }
-        segmentedControl.tintColor = car.tintColor as? UIColor
+        segmentedControl.backgroundColor = car.tintColor as? UIColor
     }
     
     private func getDataFromFile() {
