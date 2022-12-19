@@ -20,7 +20,26 @@ class ViewController: UIViewController {
         return df
     }()
     
-    @IBOutlet weak var segmentedControl: UISegmentedControl!
+    @IBOutlet weak var segmentedControl: UISegmentedControl! {
+        didSet {
+<<<<<<< Updated upstream
+            let fetchRequest: NSFetchRequest<Car> = Car.fetchRequest()
+            let mark = segmentedControl.titleForSegment(at: segmentedControl.selectedSegmentIndex)
+            fetchRequest.predicate = NSPredicate(format: "mark == %@", mark!)
+            
+            do {
+                let results = try context.fetch(fetchRequest)
+                car = results.first
+                insertDataFrom(selectedCar: car!)
+            } catch let error as NSError {
+                print(error.localizedDescription)
+            }
+=======
+            updateSegmentedControl()
+>>>>>>> Stashed changes
+        }
+    }
+    
     @IBOutlet weak var markLabel: UILabel!
     @IBOutlet weak var modelLabel: UILabel!
     @IBOutlet weak var carImageView: UIImageView!
@@ -30,6 +49,21 @@ class ViewController: UIViewController {
     @IBOutlet weak var myChoiceImageView: UIImageView!
     
     @IBAction func segmentedCtrlPressed(_ sender: UISegmentedControl) {
+        updateSegmentedControl()
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        getDataFromFile()
+        
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        getDataFromFile()
+        
         
     }
     
@@ -39,7 +73,7 @@ class ViewController: UIViewController {
         
         do {
             try context.save()
-            insertData(selectedCar: car)
+            insertDataFrom(selectedCar: car)
         } catch let error as NSError {
             print(error.localizedDescription)
         }
@@ -62,12 +96,33 @@ class ViewController: UIViewController {
         present(ac, animated: true)
     }
     
+    private func updateSegmentedControl() {
+        let fetchRequest: NSFetchRequest<Car> = Car.fetchRequest()
+        let mark = segmentedControl.titleForSegment(at: segmentedControl.selectedSegmentIndex)
+        fetchRequest.predicate = NSPredicate(format: "mark == %@", mark!)
+        
+        do {
+<<<<<<< Updated upstream
+            try context.save()
+            insertDataFrom(selectedCar: car)
+=======
+            let results = try context.fetch(fetchRequest)
+            car = results.first
+            insertDataFrom(selectedCar: car!)
+>>>>>>> Stashed changes
+        } catch let error as NSError {
+            print(error.localizedDescription)
+        }
+    }
+    
+<<<<<<< Updated upstream
+=======
     private func update(rating: Double) {
         car.rating = rating
         
         do {
             try context.save()
-            insertData(selectedCar: car)
+            insertDataFrom(selectedCar: car)
         } catch let error as NSError {
             let ac = UIAlertController(title: "Wrong value", message: "Incorrect input", preferredStyle: .alert)
             ac.addAction(UIAlertAction(title: "OK", style: .default))
@@ -77,27 +132,8 @@ class ViewController: UIViewController {
         }
     }
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        getDataFromFile()
-        
-        let fetchRequest: NSFetchRequest<Car> = Car.fetchRequest()
-        let mark = segmentedControl.titleForSegment(at: 0)
-        fetchRequest.predicate = NSPredicate(format: "mark == %@", mark!)
-        
-        do {
-            let results = try context.fetch(fetchRequest)
-            if results.first != nil {
-            car = results.first!
-            }
-            insertData(selectedCar: car)
-        } catch let error as NSError {
-            print(error.localizedDescription)
-        }
-    }
-    
-    private func insertData(selectedCar car: Car) {
+>>>>>>> Stashed changes
+    private func insertDataFrom(selectedCar car: Car) {
         carImageView.image = UIImage(data: car.imageData!)
         markLabel.text = car.mark
         modelLabel.text = car.model
