@@ -13,32 +13,13 @@ class ViewController: UIViewController {
     
     var car: Car!
     var context: NSManagedObjectContext!
+    
     lazy var dateFormatter: DateFormatter = {
         let df = DateFormatter()
         df.dateStyle = .short
         df.timeStyle = .none
         return df
     }()
-    
-    @IBOutlet weak var segmentedControl: UISegmentedControl! {
-        didSet {
-<<<<<<< Updated upstream
-            let fetchRequest: NSFetchRequest<Car> = Car.fetchRequest()
-            let mark = segmentedControl.titleForSegment(at: segmentedControl.selectedSegmentIndex)
-            fetchRequest.predicate = NSPredicate(format: "mark == %@", mark!)
-            
-            do {
-                let results = try context.fetch(fetchRequest)
-                car = results.first
-                insertDataFrom(selectedCar: car!)
-            } catch let error as NSError {
-                print(error.localizedDescription)
-            }
-=======
-            updateSegmentedControl()
->>>>>>> Stashed changes
-        }
-    }
     
     @IBOutlet weak var markLabel: UILabel!
     @IBOutlet weak var modelLabel: UILabel!
@@ -47,22 +28,27 @@ class ViewController: UIViewController {
     @IBOutlet weak var numberOfTripsLabel: UILabel!
     @IBOutlet weak var ratingLabel: UILabel!
     @IBOutlet weak var myChoiceImageView: UIImageView!
+    @IBOutlet weak var segmentedControl: UISegmentedControl!
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        getDataFromFile()
+        
+        let fetchRequest: NSFetchRequest<Car> = Car.fetchRequest()
+        guard let mark = segmentedControl.titleForSegment(at: 0) else { return }
+        fetchRequest.predicate = NSPredicate(format: "mark == %@", mark)
+        
+        do {
+            let results = try context.fetch(fetchRequest)
+            car = results.first
+            insertDataFrom(selectedCar: car)
+        } catch let error as NSError {
+            print(error.localizedDescription)
+        }
+    }
     
     @IBAction func segmentedCtrlPressed(_ sender: UISegmentedControl) {
-        updateSegmentedControl()
-    }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        getDataFromFile()
-        
-    }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        getDataFromFile()
         
         
     }
@@ -73,7 +59,7 @@ class ViewController: UIViewController {
         
         do {
             try context.save()
-            insertDataFrom(selectedCar: car)
+            insertDataFrom(selectedCar: car )
         } catch let error as NSError {
             print(error.localizedDescription)
         }
@@ -88,35 +74,15 @@ class ViewController: UIViewController {
         }
         let cancelAction = UIAlertAction(title: "Cancel", style: .default)
         
-        ac.addTextField { textField in
-            textField.keyboardType = .numberPad
+        ac.addTextField { tf in
+            tf.keyboardType = .numberPad
         }
+        
         ac.addAction(rateAction)
         ac.addAction(cancelAction)
         present(ac, animated: true)
     }
     
-    private func updateSegmentedControl() {
-        let fetchRequest: NSFetchRequest<Car> = Car.fetchRequest()
-        let mark = segmentedControl.titleForSegment(at: segmentedControl.selectedSegmentIndex)
-        fetchRequest.predicate = NSPredicate(format: "mark == %@", mark!)
-        
-        do {
-<<<<<<< Updated upstream
-            try context.save()
-            insertDataFrom(selectedCar: car)
-=======
-            let results = try context.fetch(fetchRequest)
-            car = results.first
-            insertDataFrom(selectedCar: car!)
->>>>>>> Stashed changes
-        } catch let error as NSError {
-            print(error.localizedDescription)
-        }
-    }
-    
-<<<<<<< Updated upstream
-=======
     private func update(rating: Double) {
         car.rating = rating
         
@@ -125,26 +91,30 @@ class ViewController: UIViewController {
             insertDataFrom(selectedCar: car)
         } catch let error as NSError {
             let ac = UIAlertController(title: "Wrong value", message: "Incorrect input", preferredStyle: .alert)
-            ac.addAction(UIAlertAction(title: "OK", style: .default))
-            present(ac, animated: true)
+            let action = UIAlertAction(title: "OK", style: .default)
             
+            ac.addAction(action)
+            present(ac, animated: true)
             print(error.localizedDescription)
         }
+        
     }
     
->>>>>>> Stashed changes
     private func insertDataFrom(selectedCar car: Car) {
-        carImageView.image = UIImage(data: car.imageData!)
+        if let carImageData = car.imageData {
+            carImageView.image = UIImage(data: carImageData)
+        }
         markLabel.text = car.mark
         modelLabel.text = car.model
         myChoiceImageView.isHidden = !(car.myChoice)
         ratingLabel.text = "Rating: \(car.rating) / 10"
         numberOfTripsLabel.text = "Number of trips: \(car.timesDriven)"
         
-        if car.lastStarted != nil {
-            lastTimeStartedLabel.text = "Last time started: \(dateFormatter.string(from: car.lastStarted!))"
+        if let carLastStarted = car.lastStarted {
+            lastTimeStartedLabel.text = "Last time started: \(dateFormatter.string(from: carLastStarted))"
+            
+            segmentedControl.backgroundColor = car.tintColor as? UIColor
         }
-        segmentedControl.backgroundColor = car.tintColor as? UIColor
     }
     
     private func getDataFromFile() {
@@ -162,13 +132,13 @@ class ViewController: UIViewController {
         
         guard records == 0 else { return }
         
-        
         guard let filePath = Bundle.main.path(forResource: "data", ofType: "plist"),
               let dataArray = NSArray(contentsOfFile: filePath) else { return }
         
         for dictionary in dataArray {
             guard let entity = NSEntityDescription.entity(forEntityName: "Car", in: context) else { return }
             let car = NSManagedObject(entity: entity, insertInto: context) as! Car
+            
             
             let carDictionary = dictionary as! [String: AnyObject]
             car.mark = carDictionary["mark"] as? String
@@ -193,9 +163,7 @@ class ViewController: UIViewController {
         guard let red = colorDictionary["red"],
               let green = colorDictionary["green"],
               let blue = colorDictionary["blue"] else { return UIColor() }
-        
-        return UIColor(red: CGFloat(red / 255), green: CGFloat(green / 255), blue: CGFloat(blue / 255), alpha: 1)
+        return UIColor(red: CGFloat(red / 255), green: CGFloat(green / 255), blue: CGFloat(blue / 255), alpha: 1.0)
     }
-    
 }
 
