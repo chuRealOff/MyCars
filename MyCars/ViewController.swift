@@ -28,29 +28,31 @@ class ViewController: UIViewController {
     @IBOutlet weak var numberOfTripsLabel: UILabel!
     @IBOutlet weak var ratingLabel: UILabel!
     @IBOutlet weak var myChoiceImageView: UIImageView!
-    @IBOutlet weak var segmentedControl: UISegmentedControl!
+    
+    @IBOutlet weak var segmentedControl: UISegmentedControl! {
+        didSet {
+            updateSegmentedControl()
+        }
+        
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         getDataFromFile()
         
-        let fetchRequest: NSFetchRequest<Car> = Car.fetchRequest()
-        guard let mark = segmentedControl.titleForSegment(at: 0) else { return }
-        fetchRequest.predicate = NSPredicate(format: "mark == %@", mark)
         
-        do {
-            let results = try context.fetch(fetchRequest)
-            car = results.first
-            insertDataFrom(selectedCar: car)
-        } catch let error as NSError {
-            print(error.localizedDescription)
-        }
     }
     
     @IBAction func segmentedCtrlPressed(_ sender: UISegmentedControl) {
+        updateSegmentedControl()
+        segmentedControl.selectedSegmentTintColor = .white
         
+        let whiteTitleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
+        let blackTitleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.black]
         
+        UISegmentedControl.appearance().setTitleTextAttributes(whiteTitleTextAttributes, for: .normal)
+        UISegmentedControl.appearance().setTitleTextAttributes(blackTitleTextAttributes, for: .normal)
     }
     
     @IBAction func startEnginePressed(_ sender: UIButton) {
@@ -58,7 +60,9 @@ class ViewController: UIViewController {
         car.lastStarted = Date()
         
         do {
-            try context.save()
+            if context.hasChanges {
+                try context.save()
+            }
             insertDataFrom(selectedCar: car )
         } catch let error as NSError {
             print(error.localizedDescription)
@@ -83,11 +87,28 @@ class ViewController: UIViewController {
         present(ac, animated: true)
     }
     
+    private func updateSegmentedControl() {
+        let fetchRequest: NSFetchRequest<Car> = Car.fetchRequest()
+        if let mark = segmentedControl.titleForSegment(at: segmentedControl.selectedSegmentIndex) {
+        fetchRequest.predicate = NSPredicate(format: "mark == %@", mark)
+        }
+        
+        do {
+            let results = try context.fetch(fetchRequest)
+            car = results.first
+            insertDataFrom(selectedCar: car)
+        } catch let error as NSError {
+            print(error.localizedDescription)
+        }
+    }
+    
     private func update(rating: Double) {
         car.rating = rating
         
         do {
-            try context.save()
+            if context.hasChanges {
+                try context.save()
+            }
             insertDataFrom(selectedCar: car)
         } catch let error as NSError {
             let ac = UIAlertController(title: "Wrong value", message: "Incorrect input", preferredStyle: .alert)
