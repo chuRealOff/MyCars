@@ -52,7 +52,7 @@ class ViewController: UIViewController {
         let blackTitleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.black]
         
         UISegmentedControl.appearance().setTitleTextAttributes(whiteTitleTextAttributes, for: .normal)
-        UISegmentedControl.appearance().setTitleTextAttributes(blackTitleTextAttributes, for: .normal)
+        UISegmentedControl.appearance().setTitleTextAttributes(blackTitleTextAttributes, for: .selected)
     }
     
     @IBAction func startEnginePressed(_ sender: UIButton) {
